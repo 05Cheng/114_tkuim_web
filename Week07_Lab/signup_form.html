@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>會員註冊表單</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- 也可以用 Bootstrap，但這裡先純手刻 -->
+</head>
+<body>
+  <main class="container">
+    <h1>會員註冊</h1>
+    <p class="subtitle">請填寫以下資料，*為必填欄位</p>
+
+    <form id="signup-form" novalidate>
+      <!-- 姓名 -->
+      <div class="form-group">
+        <label for="name">姓名 *</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          required
+          aria-describedby="name-error"
+        />
+        <p id="name-error" class="error" aria-live="polite"></p>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          aria-describedby="email-error"
+        />
+        <p id="email-error" class="error" aria-live="polite"></p>
+      </div>
+
+      <!-- 手機 -->
+      <div class="form-group">
+        <label for="phone">手機 *</label>
+        <input
+          id="phone"
+          name="phone"
+          type="text"
+          inputmode="numeric"
+          pattern="\\d{10}"
+          maxlength="10"
+          required
+          aria-describedby="phone-error"
+        />
+        <p class="helper">請輸入 10 碼手機號碼，例如 0912345678</p>
+        <p id="phone-error" class="error" aria-live="polite"></p>
+      </div>
+
+      <!-- 密碼 -->
+      <div class="form-group">
+        <label for="password">密碼 *</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          minlength="8"
+          aria-describedby="password-error password-strength-text"
+        />
+        <p class="helper">至少 8 碼，需包含英文字母與數字，建議加上符號。</p>
+        <div class="password-strength" aria-live="polite">
+          <div id="password-strength-bar" class="bar weak"></div>
+          <span id="password-strength-text" class="strength-text">強度：--</span>
+        </div>
+        <p id="password-error" class="error" aria-live="polite"></p>
+      </div>
+
+      <!-- 確認密碼 -->
+      <div class="form-group">
+        <label for="confirm">確認密碼 *</label>
+        <input
+          id="confirm"
+          name="confirm"
+          type="password"
+          required
+          aria-describedby="confirm-error"
+        />
+        <p id="confirm-error" class="error" aria-live="polite"></p>
+      </div>
+
+      <!-- 興趣標籤：事件委派 -->
+      <div class="form-group">
+        <label>興趣標籤（至少選 1 項）*</label>
+        <div id="interest-group" class="tag-group" aria-describedby="interest-error">
+          <!-- 用 data-value 方便事件委派取值 -->
+          <button type="button" class="tag" data-value="ai">AI / 資料科學</button>
+          <button type="button" class="tag" data-value="web">前端 / 網頁</button>
+          <button type="button" class="tag" data-value="mobile">行動開發</button>
+          <button type="button" class="tag" data-value="game">遊戲 / 圖學</button>
+          <button type="button" class="tag" data-value="iot">IoT / 嵌入式</button>
+        </div>
+        <!-- 真正要送出的欄位 -->
+        <input id="interests" name="interests" type="hidden" required />
+        <p id="interest-error" class="error" aria-live="polite"></p>
+      </div>
+
+      <!-- 服務條款 -->
+      <div class="form-group form-check">
+        <input
+          id="terms"
+          name="terms"
+          type="checkbox"
+          required
+          aria-describedby="terms-error"
+        />
+        <label for="terms">我已閱讀並同意服務條款 *</label>
+        <p id="terms-error" class="error" aria-live="polite"></p>
+      </div>
+
+      <!-- 按鈕列 -->
+      <div class="actions">
+        <button id="submit-btn" type="submit" class="btn primary">送出</button>
+        <button id="reset-btn" type="button" class="btn secondary">重設</button>
+      </div>
+
+      <!-- 成功訊息 -->
+      <p id="success-msg" class="success" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <script src="signup_form.js"></script>
+</body>
+</html>
