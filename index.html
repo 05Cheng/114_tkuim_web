@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniLife Toolkit｜課程規劃 + GPA + 番茄鐘</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-body-tertiary">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-body shadow-sm sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">UniLife Toolkit</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div id="nav" class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link active" href="#planner">課程規劃</a></li>
+          <li class="nav-item"><a class="nav-link" href="#pomodoro">番茄鐘</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <button id="btnExport" class="btn btn-outline-primary btn-sm">匯出課表</button>
+          <div class="form-check form-switch m-0">
+            <input class="form-check-input" type="checkbox" id="themeToggle" />
+            <label class="form-check-label" for="themeToggle">深色模式</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="py-5 text-center container">
+    <h1 class="fw-bold mb-2">你的校園效率中樞</h1>
+    <p class="text-body-secondary">用課程規劃、即時 GPA 計算與番茄鐘，把想法變成行動。</p>
+  </header>
+
+  <main class="container pb-5">
+    <!-- Planner Section -->
+    <section id="planner" class="mb-5">
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <h2 class="h5 mb-3">新增課程</h2>
+              <form id="courseForm" novalidate>
+                <div class="mb-3">
+                  <label for="courseName" class="form-label">課程名稱 *</label>
+                  <input type="text" class="form-control" id="courseName" name="courseName" required minlength="2" maxlength="40" placeholder="例如：資料結構">
+                  <div class="invalid-feedback">請輸入 2–40 字的課程名稱。</div>
+                </div>
+                <div class="mb-3">
+                  <label for="credits" class="form-label">學分數 *</label>
+                  <input type="number" class="form-control" id="credits" name="credits" required min="0" max="10" step="0.5" placeholder="例如：3">
+                  <div class="invalid-feedback">學分需介於 0–10（可含 0.5）。</div>
+                </div>
+                <div class="mb-3">
+                  <label for="grade" class="form-label">預期成績（A+~F 或 0–100）</label>
+                  <input type="text" class="form-control" id="grade" name="grade" placeholder="例如：A 或 85">
+                  <div class="form-text">可填 A+, A, A-, …, C-, D, F 或數字分數。</div>
+                </div>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-primary" type="submit">加入課程</button>
+                  <button class="btn btn-outline-secondary" type="button" id="btnClear">清空全部</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 m-0">我的課表</h2>
+                <input id="searchInput" class="form-control form-control-sm w-auto" placeholder="搜尋課程…">
+              </div>
+              <div class="table-responsive">
+                <table class="table align-middle" id="courseTable" aria-describedby="gpaInfo">
+                  <thead class="table-light">
+                    <tr>
+                      <th>課程</th>
+                      <th class="text-center">學分</th>
+                      <th class="text-center">預期成績</th>
+                      <th class="text-center">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="courseTbody">
+                    <!-- 由 JS 以 createElement 動態插入 -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="gpaInfo" class="mt-3">
+                <div class="d-flex flex-wrap gap-3">
+                  <span class="badge text-bg-primary">總學分：<span id="totalCredits">0</span></span>
+                  <span class="badge text-bg-success">加權平均（百分制）：<span id="avgScore">—</span></span>
+                  <span class="badge text-bg-warning">GPA（4.3 制）：<span id="gpa">—</span></span>
+                </div>
+              </div>
+              <div id="emptyHint" class="text-body-secondary small mt-2">尚未新增課程。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pomodoro Section -->
+    <section id="pomodoro">
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card shadow-sm">
+            <div class="card-body text-center">
+              <h2 class="h5">番茄鐘</h2>
+              <p class="text-body-secondary mb-4">專注 25 分鐘、休息 5 分鐘，循環提升效率。</p>
+              <div id="timerDisplay" class="display-3 fw-bold" aria-live="polite">25:00</div>
+              <div class="my-3">
+                <span class="badge text-bg-info">階段：<span id="phaseLabel">專注</span></span>
+                <span class="badge text-bg-secondary">完成番茄數：<span id="pomCount">0</span></span>
+              </div>
+              <div class="d-flex justify-content-center gap-2">
+                <button id="btnStart" class="btn btn-primary">開始</button>
+                <button id="btnPause" class="btn btn-outline-secondary">暫停</button>
+                <button id="btnReset" class="btn btn-outline-danger">重設</button>
+              </div>
+              <div class="row mt-4 g-2">
+                <div class="col-4">
+                  <label class="form-label small">專注(分)</label>
+                  <input id="focusMin" type="number" class="form-control form-control-sm" min="1" max="60" value="25">
+                </div>
+                <div class="col-4">
+                  <label class="form-label small">休息(分)</label>
+                  <input id="breakMin" type="number" class="form-control form-control-sm" min="1" max="30" value="5">
+                </div>
+                <div class="col-4">
+                  <label class="form-label small">長休息(分)</label>
+                  <input id="longBreakMin" type="number" class="form-control form-control-sm" min="1" max="60" value="15">
+                </div>
+              </div>
+              <div class="form-text mt-2">每 4 次專注後自動進入長休息。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <h2 class="h6 mb-3">任務清單（今日）</h2>
+              <form id="taskForm" class="row g-2" novalidate>
+                <div class="col-9">
+                  <label for="taskInput" class="visually-hidden">任務內容</label>
+                  <input id="taskInput" class="form-control" placeholder="輸入任務…（Enter 新增）" required minlength="2" maxlength="60">
+                  <div class="invalid-feedback">請輸入 2–60 字。</div>
+                </div>
+                <div class="col-3 d-grid">
+                  <button class="btn btn-outline-primary" type="submit">新增</button>
+                </div>
+              </form>
+              <ul id="taskList" class="list-group mt-3">
+                <!-- JS 動態插入 -->
+              </ul>
+              <div class="d-flex justify-content-end mt-3">
+                <button id="btnClearDone" class="btn btn-outline-secondary btn-sm">清除已完成</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+    <div id="toast" class="toast align-items-center text-bg-success border-0" role="status" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMsg">已新增！</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

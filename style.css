@@ -1,0 +1,25 @@
+:root {
+    --radius: 1rem;
+  }
+  
+  [data-theme="dark"] {
+    color-scheme: dark;
+  }
+  
+  .card { border-radius: var(--radius); }
+  .btn, .form-control { border-radius: .8rem; }
+  
+  #timerDisplay {
+    letter-spacing: 2px;
+    transition: transform .2s ease;
+  }
+  #timerDisplay.tick { transform: scale(1.03); }
+  
+  #courseTbody tr.added {
+    animation: fadeIn .35s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  
