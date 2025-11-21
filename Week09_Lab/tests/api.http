@@ -1,0 +1,30 @@
+### GET list
+GET http://localhost:3000/api/signup
+
+###
+
+### POST success
+POST http://localhost:3000/api/signup
+Content-Type: application/json
+
+{
+  "name": "測試同學",
+  "email": "test@example.com",
+  "phone": "0912345678",
+  "course": "Web 前端入門",
+  "agree": true
+}
+
+###
+
+### POST fail (validation error)
+POST http://localhost:3000/api/signup
+Content-Type: application/json
+
+{
+  "name": "",
+  "email": "wrong",
+  "phone": "",
+  "course": "",
+  "agree": false
+}

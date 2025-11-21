@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Week09 報名表單</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
+    label { display: block; margin-top: 10px; }
+    button { margin-top: 15px; }
+    .error { color: red; }
+    .success { color: green; }
+    .loading { opacity: 0.6; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <h1>報名表單</h1>
+
+  <form id="signup-form">
+    <label>
+      姓名：
+      <input type="text" name="name" required />
+    </label>
+
+    <label>
+      Email：
+      <input type="email" name="email" required />
+    </label>
+
+    <label>
+      手機：
+      <input type="tel" name="phone" required />
+    </label>
+
+    <label>
+      報名課程：
+      <select name="course" required>
+        <option value="">請選擇</option>
+        <option value="Web 前端入門">Web 前端入門</option>
+        <option value="AI 基礎">AI 基礎</option>
+      </select>
+    </label>
+
+    <label>
+      <input type="checkbox" name="agree" />
+      我已閱讀並同意相關條款
+    </label>
+
+    <button type="submit" id="submit-btn">送出報名</button>
+    <button type="button" id="view-list-btn">查看報名清單</button>
+  </form>
+
+  <div id="message"></div>
+
+  <h2>報名清單</h2>
+  <pre id="signup-list"></pre>
+
+  <script src="signup_form.js"></script>
+</body>
+</html>
