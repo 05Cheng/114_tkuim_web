@@ -1,0 +1,24 @@
+{
+  "name": "week11-lab-server",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "mongodb": "^6.8.0",
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  },
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

@@ -1,0 +1,49 @@
+########################################
+### Week11_Lab API 測試腳本 (REST Client)
+### 直接在 VS Code 中按每段上面的「Send Request」即可
+########################################
+
+###
+# 1. 建立一筆報名
+# 執行後會回傳一個 _id，請先把它記下來，用在下面 PATCH / DELETE 測試
+POST http://localhost:3000/api/signup
+Content-Type: application/json
+
+{
+  "name": "Peter",
+  "email": "peter@example.com",
+  "phone": "0912345678",
+  "status": "pending"
+}
+
+###
+# 2. 測試重複 email，應該得到 400 + 友善錯誤訊息
+POST http://localhost:3000/api/signup
+Content-Type: application/json
+
+{
+  "name": "Peter-duplicate",
+  "email": "peter@example.com",
+  "phone": "0922333444"
+}
+
+###
+# 3. 分頁查詢：page=1, limit=5
+GET http://localhost:3000/api/signup?page=1&limit=5
+
+###
+# 4. 更新 phone / status
+# 請把下面 URL 裡的 <PASTE_ID_HERE> 換成「第一步回傳的 _id」
+# 例如：/api/signup/692f0956688571dc78cdc735
+PATCH http://localhost:3000/api/signup/692f1024a8580a24c0a092b5
+Content-Type: application/json
+
+{
+  "phone": "0988777666",
+  "status": "confirmed"
+}
+
+###
+# 5. 刪除該筆報名
+# 一樣把 <PASTE_ID_HERE> 換成同一個 _id
+DELETE http://localhost:3000/api/signup/692f0e2931d103c5525a68c6
