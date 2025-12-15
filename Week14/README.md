@@ -18,13 +18,14 @@
 
 ##  專案結構
 
-Week14/
-├─ index.html        # 首頁（Hero 介面）
-├─ dashboard.html    # 控制面板（模組卡片）
-├─ style.css         # 全站樣式（Glass UI + Layout）
-├─ script.js         # 互動邏輯（狀態切換）
-├─ README.md         # 專案說明文件
-└─ todo.md           # 開發與功能檢查清單
+- Week14
+  - index.html：首頁（Hero 介面）
+  - dashboard.html：控制面板（模組卡片）
+  - style.css：全站樣式（Glass UI + Layout）
+  - script.js：互動邏輯（狀態切換）
+  - README.md：專案說明文件
+  - todo.md：開發與功能檢查清單
+  - test/：測試資料（可選）
 
 ---
 

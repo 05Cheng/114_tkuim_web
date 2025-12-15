@@ -5,6 +5,8 @@
 
 
 ## 資料夾結構
+
+```text
 Week09_Lab/
   client/
     signup_form.html
@@ -19,7 +21,7 @@ Week09_Lab/
     api.http(VS Code REST Client)
     signup_collection.json(Postman 匯出)
   README.md
-
+```
 
 ## 如何啟動後端
 cd Week09_Lab/server

@@ -10,6 +10,8 @@
 
 ## 資料夾結構
 
+
+```text
 Week11_Lab/
   docker/
     docker-compose.yml
@@ -28,8 +30,7 @@ Week11_Lab/
   tests/
     api.http                 # VS Code REST Client
   README.md
-
----
+```
 
 ## 如何啟動資料庫 (Docker)
 
