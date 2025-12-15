@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Antigravity Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="dark">
+    <header class="topbar">
+        <div class="logo">Week14</div>
+
+        <nav class="nav">
+            <a href="index.html">首頁</a>
+            <a class="active" href="dashboard.html">控制面板</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h2 class="float">模組面板</h2>
+
+        <div class="card-grid">
+            <div class="card float2">
+                <h3>課程系統</h3>
+                <p>模仿 iClass 的學習資訊卡片。</p>
+            </div>
+
+            <div class="card float">
+                <h3>內容串流</h3>
+                <p>靈感來自 Netflix 的主視覺排列。</p>
+            </div>
+
+            <div class="card float3">
+                <h3>反重力 UI</h3>
+                <p>使用動畫與漂浮效果模擬零重力。</p>
+            </div>
+
+            <div class="card float2">
+                <h3>系統狀態</h3>
+                <p id="statusText">Gravity: OFF</p>
+                <button class="btn" onclick="toggleGravity()">切換</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <a href="index.html" class="back">← 返回首頁</a>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

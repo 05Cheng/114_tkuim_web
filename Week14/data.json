@@ -1,0 +1,34 @@
+{
+    "home": {
+        "title": "反重力介面系統",
+        "desc": "設計靈感：Netflix 的大主視覺（Hero Banner）＋ iClass 的卡片式資訊流與清楚分區，並加入 antigravity 的漂浮、霓虹、玻璃擬態效果。",
+        "tags": [
+            "Netflix-style Hero",
+            "iClass Cards",
+            "Clean Sections",
+            "Antigravity Motion",
+            "Neon Glass"
+        ]
+    },
+    "dashboard": {
+        "desc": "此頁以 iClass 的資訊流為例，用卡片模組呈現功能；並保留 Netflix 入口感（暗色聚光）與 antigravity 漂浮動畫。",
+        "cards": [
+            {
+                "title": "課程系統（iClass vibe）",
+                "text": "卡片式資訊流：動態、待辦、通知等內容模組化呈現。"
+            },
+            {
+                "title": "內容主視覺（Netflix vibe）",
+                "text": "以大標題與黑暗氛圍打造入口視覺，強化聚焦與層次。"
+            },
+            {
+                "title": "反重力特效（Antigravity）",
+                "text": "漂浮動畫＋霓虹玻璃擬態，模擬零重力漂移感。"
+            },
+            {
+                "title": "系統狀態（Interactive）",
+                "text": "用 JS 切換 Gravity ON/OFF，呈現可互動的 UI。"
+            }
+        ]
+    }
+}

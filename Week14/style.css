@@ -1,0 +1,339 @@
+:root {
+    --bg1: #71adbb;
+    --bg2: #218e9b;
+
+    --txt: #f2f4f7;
+    --muted: rgba(242, 244, 247, .75);
+
+    --glass: rgba(255, 255, 255, .08);
+    --glass-soft: rgba(255, 255, 255, .05);
+
+    --line: rgba(255, 255, 255, .20);
+    --line-soft: rgba(255, 255, 255, .12);
+
+    --accent: #cfd6df;
+    --accent-soft: rgba(255, 255, 255, .18);
+}
+
+/* ---------- Reset ---------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ---------- Body / Background ---------- */
+body.dark {
+    font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    color: var(--txt);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background:
+        radial-gradient(900px 500px at 20% 80%, rgba(255, 255, 255, .10) 0%, transparent 55%),
+        radial-gradient(700px 420px at 80% 30%, rgba(255, 255, 255, .08) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+}
+
+/* ---------- Background Effects ---------- */
+.bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+}
+
+.stars {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, .6) 30%, transparent 35%),
+        radial-gradient(1px 1px at 70% 20%, rgba(255, 255, 255, .5) 30%, transparent 35%),
+        radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, .4) 30%, transparent 35%);
+    opacity: .35;
+}
+
+.glow {
+    position: absolute;
+    inset: -30%;
+    background:
+        radial-gradient(circle at 60% 40%, rgba(255, 255, 255, .14), transparent 45%),
+        radial-gradient(circle at 30% 70%, rgba(255, 255, 255, .10), transparent 55%);
+    filter: blur(30px);
+    pointer-events: none;
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    backdrop-filter: blur(12px);
+    background: rgba(10, 10, 12, .45);
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.logo {
+    letter-spacing: 3px;
+    font-weight: 800;
+    color: var(--accent);
+    user-select: none;
+}
+
+/* ---------- Navigation ---------- */
+.nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.nav a {
+    color: rgba(242, 244, 247, .85);
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--line-soft);
+    background: var(--glass-soft);
+}
+
+.nav a.active {
+    color: var(--txt);
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .12);
+}
+
+/* ---------- Buttons ---------- */
+.mini-btn,
+.btn {
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .10);
+    color: var(--txt);
+    padding: 10px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: .2s;
+    text-decoration: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn.ghost {
+    border: 1px solid var(--line-soft);
+    background: rgba(255, 255, 255, .06);
+}
+
+/* ---------- Layout ---------- */
+.wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 22px 18px 40px;
+}
+
+.muted {
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+    min-height: calc(100vh - 64px - 60px);
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 18px;
+    align-items: center;
+}
+
+/* 讓左側內容分開（標題/描述/按鈕） */
+.hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    /* 整體間距：可改 12~28 */
+    align-items: flex-start;
+}
+
+.hero-left h1 {
+    margin: 0;
+    line-height: 1.15;
+    /* 標題行距 */
+}
+
+.hero-left .muted {
+    margin: 0;
+    line-height: 2.2;
+    /* 內文行距 */
+}
+
+/* 按鈕區塊再拉開一點 */
+.cta {
+    margin-top: 6px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+
+.hero-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+/* ---------- Orb ---------- */
+.orb {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, .35), rgba(0, 0, 0, .1) 60%);
+    box-shadow: 0 0 40px rgba(255, 255, 255, .15);
+}
+
+/* ---------- Panels ---------- */
+.panel {
+    width: min(420px, 100%);
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid var(--line-soft);
+    background: rgba(255, 255, 255, .06);
+    backdrop-filter: blur(10px);
+}
+
+.panel-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: .8;
+    margin-bottom: 10px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-top: 1px solid var(--line-soft);
+}
+
+.row:first-of-type {
+    border-top: none;
+}
+
+/* ---------- Cards (首頁控制面板) ---------- */
+.grid {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.card {
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    padding: 16px;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card h3 {
+    font-size: 16px;
+}
+
+.card p {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+    opacity: .6;
+    text-align: center;
+    padding: 18px 0;
+    border-top: 1px solid var(--line-soft);
+}
+
+.back {
+    color: rgba(242, 244, 247, .7);
+    text-decoration: none;
+}
+
+/* ---------- Animations ---------- */
+.float {
+    animation: float 4s ease-in-out infinite;
+}
+
+.float2 {
+    animation: float 6s ease-in-out infinite;
+}
+
+.float3 {
+    animation: float 8s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-14px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-right {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 860px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-right {
+        align-items: flex-start;
+    }
+}
+
+.hero> :first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    align-items: flex-start;
+}
+
+.hero> :first-child h1 {
+    margin: 0;
+    line-height: 1.15;
+}
+
+.hero> :first-child .muted,
+.hero> :first-child p {
+    margin: 0;
+    line-height: 2.2;
+}
+
+.hero> :first-child .cta {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
