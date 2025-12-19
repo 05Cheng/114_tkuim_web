@@ -46,7 +46,7 @@ Week12/
 ---
 
 ## 環境需求
-- Node.js (建議 LTS)
+- Node.js 
 - Docker / Docker Compose
 - MongoDB Compass（檢查資料用）
 
