@@ -1,0 +1,87 @@
+
+@BASE = http://localhost:3000
+
+### ======== 在這裡貼 token 與 id ========
+@STUDENT1_TOKEN =
+@STUDENT2_TOKEN =
+@ADMIN_TOKEN =
+@SIGNUP_ID =
+
+### 0) 未登入 → 應 401
+GET {{BASE}}/api/signup
+
+### 1) 建 student1
+POST {{BASE}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "student1@test.com",
+  "password": "123456",
+  "role": "student"
+}
+
+### 2) 建 student2
+POST {{BASE}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "student2@test.com",
+  "password": "123456",
+  "role": "student"
+}
+
+### 3) 建 admin
+POST {{BASE}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "123456",
+  "role": "admin"
+}
+
+### 4) student1 login（把回來 token 貼到最上方 @STUDENT1_TOKEN）
+POST {{BASE}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "student1@test.com",
+  "password": "123456"
+}
+
+### 5) student2 login（把回來 token 貼到最上方 @STUDENT2_TOKEN）
+POST {{BASE}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "student2@test.com",
+  "password": "123456"
+}
+
+### 6) admin login（把回來 token 貼到最上方 @ADMIN_TOKEN）
+POST {{BASE}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "123456"
+}
+
+### 7) student1 建一筆 signup（回傳 _id，貼到最上方 @SIGNUP_ID）
+POST {{BASE}}/api/signup
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN0dWRlbnQxQHRlc3QuY29tIiwicm9sZSI6InN0dWRlbnQiLCJpYXQiOjE3NjYxMzIwOTksImV4cCI6MTc2NjIxODQ5OSwic3ViIjoiNjk0NGY0OWY0ZjdlOTQ0MDQ5NDU3YjAxIn0.vwFA-LSyM86pGKCxM7vkIkwZZGIn5mU3Xxe59f4wqQY
+
+{
+  "name": "AAA",
+  "email": "aaa@gmail.com",
+  "phone": "0912345678"
+}
+
+### 8) 權限不足：student2 嘗試刪 student1 的資料 → 應 403
+DELETE {{BASE}}/api/signup/69450acfce5a04cd49ab1362
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN0dWRlbnQyQHRlc3QuY29tIiwicm9sZSI6InN0dWRlbnQiLCJpYXQiOjE3NjYxMzIxMjAsImV4cCI6MTc2NjIxODUyMCwic3ViIjoiNjk0NGY0Yzc0ZjdlOTQ0MDQ5NDU3YjAyIn0.aqNl1qwqVv_jHkRbR1xzpcOGTB1pZ7gnusonEE_z0fU
+
+### 9) admin 刪除成功 → 應 200
+DELETE {{BASE}}/api/signup/69450acfce5a04cd49ab1362
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlc3QuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY2MTMyMDcwLCJleHAiOjE3NjYyMTg0NzAsInN1YiI6IjY5NDRmNGQ2NGY3ZTk0NDA0OTQ1N2IwMyJ9.JzOk-FQvORbO-Nk0q5spMK7kn78IDEMkGZrF6FUxH1c
