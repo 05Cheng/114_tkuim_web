@@ -1,0 +1,11 @@
+services:
+  mongo_final:
+    image: mongo:7
+    container_name: final-mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_final_data:/data/db
+
+volumes:
+  mongo_final_data:

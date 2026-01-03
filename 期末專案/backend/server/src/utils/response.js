@@ -1,12 +1,9 @@
-export function ok(res, data = null, message = "OK") {
-    return res.json({ success: true, message, data });
+export function ok(res, data = null, message = "OK", status = 200) {
+    return res.status(status).json({ success: true, message, data });
   }
   
-  export function created(res, data = null, message = "Created") {
-    return res.status(201).json({ success: true, message, data });
-  }
-  
-  export function fail(res, status = 400, message = "Bad Request", data = null) {
+  export function fail(res, message = "Error", status = 400, data = null) {
     return res.status(status).json({ success: false, message, data });
   }
+  
   

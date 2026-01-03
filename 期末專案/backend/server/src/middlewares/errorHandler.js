@@ -1,9 +1,13 @@
-export default function errorHandler(err, req, res, next) {
-    const status = err.status || 500;
-    res.status(status).json({
+export function errorHandler(err, req, res, next) {
+    console.error("[ERR]", err);
+  
+    const status = err.statusCode || 500;
+    const msg = err.message || "Internal Server Error";
+  
+    return res.status(status).json({
       success: false,
-      message: err.message || "Server error",
-      data: err.data || null
+      message: msg,
+      data: null
     });
   }
   

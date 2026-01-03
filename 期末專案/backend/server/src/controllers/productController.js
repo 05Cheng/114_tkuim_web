@@ -1,65 +1,56 @@
 import Product from "../models/Product.js";
-import { ok, created } from "../utils/response.js";
+import { ok } from "../utils/response.js";
 
 export async function createProduct(req, res) {
-  const { name, price, stock, description } = req.body || {};
+  const { name, price, stock, description } = req.body;
 
-  if (!name || String(name).trim() === "") {
-    const e = new Error("name is required");
-    e.status = 400;
-    throw e;
+  if (!name || price === undefined || stock === undefined) {
+    return res.status(400).json({ success: false, message: "name, price, stock are required", data: null });
   }
 
-  const p = await Product.create({
-    name: String(name).trim(),
+  const doc = await Product.create({
+    name,
     price: Number(price),
     stock: Number(stock),
-    description: String(description || "")
+    description: description || ""
   });
 
-  return created(res, p, "Product created");
+  return ok(res, doc, "Product created", 201);
 }
 
-export async function listProducts(req, res) {
-  const items = await Product.find().sort({ createdAt: -1 });
-  return ok(res, items);
+export async function getProducts(req, res) {
+  const q = (req.query.q || "").trim();
+  const filter = q ? { name: { $regex: q, $options: "i" } } : {};
+  const list = await Product.find(filter).sort({ createdAt: -1 });
+  return ok(res, list, "OK");
 }
 
 export async function getProduct(req, res) {
-  const p = await Product.findById(req.params.id);
-  if (!p) {
-    const e = new Error("Product not found");
-    e.status = 404;
-    throw e;
-  }
-  return ok(res, p);
+  const doc = await Product.findById(req.params.id);
+  if (!doc) return res.status(404).json({ success: false, message: "Product not found", data: null });
+  return ok(res, doc, "OK");
 }
 
 export async function updateProduct(req, res) {
-  const p = await Product.findById(req.params.id);
-  if (!p) {
-    const e = new Error("Product not found");
-    e.status = 404;
-    throw e;
-  }
+  const { name, price, stock, description } = req.body;
 
-  const { name, price, stock, description } = req.body || {};
-  if (name !== undefined) p.name = String(name).trim();
-  if (price !== undefined) p.price = Number(price);
-  if (stock !== undefined) p.stock = Number(stock);
-  if (description !== undefined) p.description = String(description);
+  const doc = await Product.findByIdAndUpdate(
+    req.params.id,
+    {
+      ...(name !== undefined ? { name } : {}),
+      ...(price !== undefined ? { price: Number(price) } : {}),
+      ...(stock !== undefined ? { stock: Number(stock) } : {}),
+      ...(description !== undefined ? { description } : {})
+    },
+    { new: true, runValidators: true }
+  );
 
-  await p.save();
-  return ok(res, p, "Product updated");
+  if (!doc) return res.status(404).json({ success: false, message: "Product not found", data: null });
+  return ok(res, doc, "Product updated");
 }
 
 export async function deleteProduct(req, res) {
-  const p = await Product.findById(req.params.id);
-  if (!p) {
-    const e = new Error("Product not found");
-    e.status = 404;
-    throw e;
-  }
-  await p.deleteOne();
-  return ok(res, { id: req.params.id }, "Product deleted");
+  const doc = await Product.findByIdAndDelete(req.params.id);
+  if (!doc) return res.status(404).json({ success: false, message: "Product not found", data: null });
+  return ok(res, { id: doc._id }, "Product deleted");
 }

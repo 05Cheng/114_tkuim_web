@@ -1,29 +1,24 @@
 import mongoose from "mongoose";
 
-const OrderItemSchema = new mongoose.Schema(
+const orderItemSchema = new mongoose.Schema(
   {
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: false },
-    name: { type: String, required: true },
-    price: { type: Number, required: true, min: 0 },
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+    name: { type: String, required: true },       // 下單當下商品名快照
+    price: { type: Number, required: true, min: 0 }, // 下單當下價格快照
     qty: { type: Number, required: true, min: 1 }
   },
   { _id: false }
 );
 
-const OrderSchema = new mongoose.Schema(
+const orderSchema = new mongoose.Schema(
   {
-    customerName: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, trim: true },
-    address: { type: String, required: true, trim: true },
-    status: {
-      type: String,
-      enum: ["pending", "paid", "shipped", "done", "cancelled"],
-      default: "pending"
-    },
-    items: { type: [OrderItemSchema], default: [] },
-    total: { type: Number, required: true, min: 0 }
+    items: { type: [orderItemSchema], required: true },
+    total: { type: Number, required: true, min: 0 },
+    status: { type: String, enum: ["pending", "paid", "shipped", "done", "cancelled"], default: "pending" },
+    note: { type: String, default: "", maxlength: 300 }
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Order", OrderSchema);
+export default mongoose.model("Order", orderSchema);
+

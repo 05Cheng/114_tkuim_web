@@ -1,80 +1,100 @@
 import Order from "../models/Order.js";
-import { ok, created } from "../utils/response.js";
+import Product from "../models/Product.js";
+import { ok } from "../utils/response.js";
 
-export async function createOrder(req, res) {
-  const { customerName, phone, address, items, total, status } = req.body || {};
-
-  if (!customerName || !phone || !address) {
-    const e = new Error("customerName / phone / address are required");
-    e.status = 400;
-    throw e;
-  }
-  if (!Array.isArray(items) || items.length === 0) {
-    const e = new Error("items is required");
-    e.status = 400;
-    throw e;
-  }
-
-  const order = await Order.create({
-    customerName: String(customerName).trim(),
-    phone: String(phone).trim(),
-    address: String(address).trim(),
-    status: status || "pending",
-    items: items.map((x) => ({
-      productId: x.productId || undefined,
-      name: String(x.name || ""),
-      price: Number(x.price || 0),
-      qty: Number(x.qty || 1)
-    })),
-    total: Number(total || 0)
-  });
-
-  return created(res, order, "Order created");
+function calcTotal(items) {
+  return items.reduce((sum, it) => sum + it.price * it.qty, 0);
 }
 
-export async function listOrders(req, res) {
-  const items = await Order.find().sort({ createdAt: -1 });
-  return ok(res, items);
+export async function createOrder(req, res) {
+  const { items, note } = req.body;
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ success: false, message: "items is required", data: null });
+  }
+
+  // items: [{ productId, qty }]
+  const ids = items.map((x) => x.productId);
+  const products = await Product.find({ _id: { $in: ids } });
+
+  if (products.length !== ids.length) {
+    return res.status(400).json({ success: false, message: "Some products not found", data: null });
+  }
+
+  // 建立快照 items + 可選擇扣庫存（這裡先做扣庫存）
+  const snapItems = items.map((it) => {
+    const p = products.find((x) => String(x._id) === String(it.productId));
+    const qty = Number(it.qty || 1);
+
+    return {
+      productId: p._id,
+      name: p.name,
+      price: p.price,
+      qty
+    };
+  });
+
+  // 檢查庫存
+  for (const it of snapItems) {
+    const p = products.find((x) => String(x._id) === String(it.productId));
+    if (p.stock < it.qty) {
+      return res.status(400).json({ success: false, message: `Stock not enough: ${p.name}`, data: null });
+    }
+  }
+
+  // 扣庫存
+  for (const it of snapItems) {
+    await Product.updateOne({ _id: it.productId }, { $inc: { stock: -it.qty } });
+  }
+
+  const total = calcTotal(snapItems);
+
+  const doc = await Order.create({
+    items: snapItems,
+    total,
+    status: "pending",
+    note: note || ""
+  });
+
+  return ok(res, doc, "Order created", 201);
+}
+
+export async function getOrders(req, res) {
+  const list = await Order.find().sort({ createdAt: -1 });
+  return ok(res, list, "OK");
 }
 
 export async function getOrder(req, res) {
-  const o = await Order.findById(req.params.id);
-  if (!o) {
-    const e = new Error("Order not found");
-    e.status = 404;
-    throw e;
-  }
-  return ok(res, o);
+  const doc = await Order.findById(req.params.id);
+  if (!doc) return res.status(404).json({ success: false, message: "Order not found", data: null });
+  return ok(res, doc, "OK");
 }
 
 export async function updateOrder(req, res) {
-  const o = await Order.findById(req.params.id);
-  if (!o) {
-    const e = new Error("Order not found");
-    e.status = 404;
-    throw e;
-  }
+  const { status, note } = req.body;
 
-  const { status, customerName, phone, address, items, total } = req.body || {};
+  const doc = await Order.findByIdAndUpdate(
+    req.params.id,
+    {
+      ...(status !== undefined ? { status } : {}),
+      ...(note !== undefined ? { note } : {})
+    },
+    { new: true, runValidators: true }
+  );
 
-  if (status !== undefined) o.status = status;
-  if (customerName !== undefined) o.customerName = String(customerName).trim();
-  if (phone !== undefined) o.phone = String(phone).trim();
-  if (address !== undefined) o.address = String(address).trim();
-  if (Array.isArray(items)) o.items = items;
-  if (total !== undefined) o.total = Number(total);
-
-  await o.save();
-  return ok(res, o, "Order updated");
+  if (!doc) return res.status(404).json({ success: false, message: "Order not found", data: null });
+  return ok(res, doc, "Order updated");
 }
 
 export async function deleteOrder(req, res) {
-  const o = await Order.findById(req.params.id);
-  if (!o) {
-    const e = new Error("Order not found");
-    e.status = 404;
-    throw e;
+  const doc = await Order.findByIdAndDelete(req.params.id);
+  if (!doc) return res.status(404).json({ success: false, message: "Order not found", data: null });
+
+  // 退庫存（可選；這裡做退回）
+  for (const it of doc.items) {
+    await Product.updateOne({ _id: it.productId }, { $inc: { stock: it.qty } });
   }
-  await o.deleteOne();
-  return ok(res, { id: req.params.id }, "Order deleted");
+
+  return ok(res, { id: doc._id }, "Order deleted");
 }
+
