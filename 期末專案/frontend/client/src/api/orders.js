@@ -1,9 +1,22 @@
-import { request } from "./http.js";
+import { request } from "./http";
 
-export const ordersApi = {
-  list: () => request("/api/orders"),
-  get: (id) => request(`/api/orders/${id}`),
-  create: (payload) => request("/api/orders", { method: "POST", body: JSON.stringify(payload) }),
-  update: (id, payload) => request(`/api/orders/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
-  remove: (id) => request(`/api/orders/${id}`, { method: "DELETE" })
-};
+export function getOrders() {
+  return request("/api/orders");
+}
+
+export function getOrder(id) {
+  return request(`/api/orders/${id}`);
+}
+
+export function createOrder(body) {
+  return request("/api/orders", { method: "POST", body: JSON.stringify(body) });
+}
+
+export function updateOrder(id, body) {
+  return request(`/api/orders/${id}`, { method: "PUT", body: JSON.stringify(body) });
+}
+
+export function deleteOrder(id) {
+  return request(`/api/orders/${id}`, { method: "DELETE" });
+}
+

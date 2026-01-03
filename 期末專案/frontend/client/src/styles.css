@@ -2,21 +2,5 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light; }
-body { @apply bg-slate-50 text-slate-900; }
-a { text-decoration: none; }
-
-.container { @apply mx-auto max-w-6xl px-4 py-6; }
-.card { @apply rounded-2xl border bg-white p-5; }
-.h1 { @apply text-xl font-semibold; }
-.muted { @apply text-sm text-slate-500; }
-
-.btn { @apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm border bg-white hover:bg-slate-50; }
-.btn-primary { @apply rounded-lg px-3 py-2 text-sm bg-slate-900 text-white hover:bg-slate-800; }
-.btn-danger { @apply rounded-lg px-3 py-2 text-sm border border-red-200 bg-red-50 text-red-700 hover:bg-red-100; }
-
-.input { @apply w-full rounded-lg border px-3 py-2 text-sm bg-white; }
-.label { @apply text-sm font-medium text-slate-700; }
-
-.tableHead { @apply grid grid-cols-12 bg-slate-50 text-xs text-slate-600 px-4 py-3; }
-.tableRow { @apply grid grid-cols-12 px-4 py-3 items-center; }
+/* 小小的全域調整 */
+html, body { height: 100%; }

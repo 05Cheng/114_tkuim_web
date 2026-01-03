@@ -1,55 +1,41 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import ProductForm from "../components/ProductForm.jsx";
-import { productsApi } from "../api/products.js";
+import { createProduct } from "../api/products";
+import ProductForm from "../components/ProductForm";
+import { useToast } from "../components/Toast";
 
 export default function AdminProductNew() {
+  const toast = useToast();
   const nav = useNavigate();
-  const [form, setForm] = useState({ name: "", price: 0, stock: 0, description: "" });
-  const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  async function save() {
-    setErr("");
-    setBusy(true);
+  async function onSubmit(body) {
+    setSubmitting(true);
     try {
-      const payload = {
-        name: String(form.name || "").trim(),
-        price: Number(form.price),
-        stock: Number(form.stock),
-        description: String(form.description || "")
-      };
-      if (!payload.name) throw new Error("商品名稱必填");
-      if (Number.isNaN(payload.price) || payload.price < 0) throw new Error("價格不正確");
-      if (Number.isNaN(payload.stock) || payload.stock < 0) throw new Error("庫存不正確");
-
-      await productsApi.create(payload);
-      alert("新增成功");
+      await createProduct(body);
+      toast.success("已新增");
       nav("/admin/products");
     } catch (e) {
-      setErr(e.message || "新增失敗");
+      toast.error(e.message || "新增失敗");
     } finally {
-      setBusy(false);
+      setSubmitting(false);
     }
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center">
-        <div className="h1">後台｜新增商品</div>
-        <div className="ml-auto">
-          <Link className="btn" to="/admin/products">回商品列表</Link>
+    <div className="mx-auto max-w-3xl px-4 py-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">新增商品</h1>
+          <p className="text-sm text-slate-500">Create</p>
         </div>
+        <Link className="text-sm text-slate-700 hover:underline" to="/admin/products">← 回列表</Link>
       </div>
 
-      {err ? <div className="card border-red-200 bg-red-50 text-red-700 text-sm">{err}</div> : null}
-
-      <div className="card max-w-2xl space-y-4">
-        <ProductForm value={form} onChange={setForm} />
-        <button className="btn-primary w-fit" disabled={busy} onClick={save}>
-          {busy ? "儲存中..." : "儲存"}
-        </button>
+      <div className="mt-6 rounded-2xl border bg-white p-6 shadow-sm">
+        <ProductForm submitting={submitting} onSubmit={onSubmit} />
       </div>
     </div>
   );
 }
+

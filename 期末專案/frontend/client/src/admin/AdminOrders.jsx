@@ -1,83 +1,109 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ordersApi } from "../api/orders.js";
-
-function money(n) {
-  return Number(n || 0).toLocaleString("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 });
-}
+import { deleteOrder, getOrders } from "../api/orders";
+import { useToast } from "../components/Toast";
 
 export default function AdminOrders() {
+  const toast = useToast();
   const [items, setItems] = useState([]);
-  const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
 
   async function load() {
-    setErr("");
     setLoading(true);
     try {
-      const data = await ordersApi.list();
+      const data = await getOrders();
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
-      setErr(e.message || "載入失敗");
+      toast.error(e.message || "載入失敗");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
-  async function del(id) {
-    if (!confirm("確定刪除訂單？")) return;
+  async function onDelete(id) {
+    if (!confirm("確定要刪除這筆訂單？")) return;
     try {
-      await ordersApi.remove(id);
-      await load();
+      await deleteOrder(id);
+      toast.success("已刪除訂單");
+      load();
     } catch (e) {
-      alert(e.message || "刪除失敗");
+      toast.error(e.message || "刪除失敗");
     }
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="h1">後台｜訂單管理</div>
-        <div className="ml-auto flex gap-2">
-          <Link className="btn" to="/admin/products">商品管理</Link>
-          <Link className="btn" to="/">回前台</Link>
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">後台｜訂單管理</h1>
+          <p className="text-sm text-slate-500">Read / Update(狀態) / Delete</p>
+          <div className="mt-2 flex gap-2 text-sm">
+            <Link to="/admin/products" className="text-slate-700 underline">去商品管理</Link>
+            <Link to="/" className="text-slate-700 underline">回前台</Link>
+          </div>
         </div>
+        <button onClick={load} className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">
+          重新整理
+        </button>
       </div>
 
-      {err ? <div className="card border-red-200 bg-red-50 text-red-700 text-sm">{err}</div> : null}
-
-      {loading ? (
-        <div className="muted">載入中...</div>
-      ) : (
-        <div className="card p-0 overflow-hidden">
-          <div className="tableHead">
-            <div className="col-span-4">客戶</div>
-            <div className="col-span-2">狀態</div>
-            <div className="col-span-3">金額</div>
-            <div className="col-span-3 text-right">操作</div>
-          </div>
-
-          <div className="divide-y">
-            {items.map(o => (
-              <div key={o._id} className="tableRow">
-                <div className="col-span-4">
-                  <div className="font-medium">{o.customerName || "—"}</div>
-                  <div className="text-xs text-slate-500">{o.phone || ""}</div>
-                </div>
-                <div className="col-span-2 text-sm">{o.status || "—"}</div>
-                <div className="col-span-3 font-semibold">{money(o.total)}</div>
-                <div className="col-span-3 flex justify-end gap-2">
-                  <Link className="btn" to={`/admin/orders/${o._id}`}>明細</Link>
-                  <button className="btn-danger" onClick={() => del(o._id)}>刪除</button>
-                </div>
-              </div>
-            ))}
-            {items.length === 0 ? <div className="px-4 py-6 muted">目前沒有訂單</div> : null}
-          </div>
+      <div className="mt-6 rounded-2xl border bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th className="p-3">客戶</th>
+                <th className="p-3">狀態</th>
+                <th className="p-3">總金額</th>
+                <th className="p-3">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td className="p-4 text-slate-500" colSpan="4">載入中...</td></tr>
+              ) : items.length === 0 ? (
+                <tr><td className="p-4 text-slate-500" colSpan="4">沒有訂單</td></tr>
+              ) : (
+                items.map((o) => (
+                  <tr key={o._id} className="border-b last:border-b-0">
+                    <td className="p-3">
+                      <div className="font-semibold text-slate-900">{o.customer?.name || "—"}</div>
+                      <div className="text-xs text-slate-500">{o.customer?.phone || ""}</div>
+                    </td>
+                    <td className="p-3">
+                      <span className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-800">
+                        {o.status || "pending"}
+                      </span>
+                    </td>
+                    <td className="p-3">${Number(o.total || 0)}</td>
+                    <td className="p-3">
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          to={`/admin/orders/${o._id}`}
+                          className="rounded-lg border px-3 py-2 text-xs font-semibold hover:bg-slate-50"
+                        >
+                          詳情
+                        </Link>
+                        <button
+                          onClick={() => onDelete(o._id)}
+                          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800 hover:bg-rose-100"
+                        >
+                          刪除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 }
+

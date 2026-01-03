@@ -1,28 +1,27 @@
-const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
 export async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {})
-    },
-    ...options
-  });
+  const url = `${BASE_URL}${path}`;
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
 
-  const ct = res.headers.get("content-type") || "";
-  let data = null;
-  if (ct.includes("application/json")) data = await res.json().catch(() => null);
-  else data = await res.text().catch(() => null);
+  const res = await fetch(url, { ...options, headers });
+
+  let payload = null;
+  try {
+    payload = await res.json();
+  } catch {
+    payload = null;
+  }
 
   if (!res.ok) {
-    const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+    const msg = payload?.message || payload?.error || `HTTP ${res.status}`;
     const err = new Error(msg);
     err.status = res.status;
-    err.data = data;
+    err.payload = payload;
     throw err;
   }
 
-  // 兼容統一回應格式：{ success, data, message }
-  if (data && typeof data === "object" && "data" in data) return data.data;
-  return data;
+  // 支援你的後端統一格式：{ success, message, data }
+  return payload?.data !== undefined ? payload.data : payload;
 }
+

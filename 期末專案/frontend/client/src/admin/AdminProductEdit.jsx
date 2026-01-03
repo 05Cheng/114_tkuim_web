@@ -1,74 +1,64 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import ProductForm from "../components/ProductForm.jsx";
-import { productsApi } from "../api/products.js";
+import { getProduct, updateProduct } from "../api/products";
+import ProductForm from "../components/ProductForm";
+import { useToast } from "../components/Toast";
 
 export default function AdminProductEdit() {
   const { id } = useParams();
+  const toast = useToast();
   const nav = useNavigate();
-
-  const [form, setForm] = useState({ name: "", price: 0, stock: 0, description: "" });
-  const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     (async () => {
-      setErr("");
+      setLoading(true);
       try {
-        const p = await productsApi.get(id);
-        setForm({
-          name: p.name || "",
-          price: Number(p.price || 0),
-          stock: Number(p.stock || 0),
-          description: p.description || ""
-        });
+        const data = await getProduct(id);
+        setItem(data);
       } catch (e) {
-        setErr(e.message || "載入失敗");
+        toast.error(e.message || "載入失敗");
+      } finally {
+        setLoading(false);
       }
     })();
   }, [id]);
 
-  async function save() {
-    setErr("");
-    setBusy(true);
+  async function onSubmit(body) {
+    setSubmitting(true);
     try {
-      const payload = {
-        name: String(form.name || "").trim(),
-        price: Number(form.price),
-        stock: Number(form.stock),
-        description: String(form.description || "")
-      };
-      if (!payload.name) throw new Error("商品名稱必填");
-      if (Number.isNaN(payload.price) || payload.price < 0) throw new Error("價格不正確");
-      if (Number.isNaN(payload.stock) || payload.stock < 0) throw new Error("庫存不正確");
-
-      await productsApi.update(id, payload);
-      alert("更新成功");
+      await updateProduct(id, body);
+      toast.success("已更新");
       nav("/admin/products");
     } catch (e) {
-      setErr(e.message || "更新失敗");
+      toast.error(e.message || "更新失敗");
     } finally {
-      setBusy(false);
+      setSubmitting(false);
     }
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center">
-        <div className="h1">後台｜編輯商品</div>
-        <div className="ml-auto">
-          <Link className="btn" to="/admin/products">回商品列表</Link>
+    <div className="mx-auto max-w-3xl px-4 py-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">編輯商品</h1>
+          <p className="text-sm text-slate-500">Update</p>
         </div>
+        <Link className="text-sm text-slate-700 hover:underline" to="/admin/products">← 回列表</Link>
       </div>
 
-      {err ? <div className="card border-red-200 bg-red-50 text-red-700 text-sm">{err}</div> : null}
-
-      <div className="card max-w-2xl space-y-4">
-        <ProductForm value={form} onChange={setForm} />
-        <button className="btn-primary w-fit" disabled={busy} onClick={save}>
-          {busy ? "儲存中..." : "儲存"}
-        </button>
+      <div className="mt-6 rounded-2xl border bg-white p-6 shadow-sm">
+        {loading ? (
+          <div className="text-sm text-slate-500">載入中...</div>
+        ) : item ? (
+          <ProductForm initial={item} submitting={submitting} onSubmit={onSubmit} />
+        ) : (
+          <div className="text-sm text-slate-500">找不到商品</div>
+        )}
       </div>
     </div>
   );
 }
+
