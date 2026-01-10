@@ -1,101 +1,116 @@
-import { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createOrder } from "../api/orders";
-import { calcTotal, clearCart, getCartItems } from "../lib/cart";
-import { useToast } from "../components/Toast";
+import { loadCart, clearCart, getTotal } from "../lib/cart.js";
+import { ordersAPI } from "../api/orders.js";
+import { useToast } from "../components/Toast.jsx";
 
 export default function Checkout() {
-  const toast = useToast();
   const nav = useNavigate();
-  const [items, setItems] = useState([]);
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [customerAddress, setCustomerAddress] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { push } = useToast();
 
-  useEffect(() => {
-    setItems(getCartItems());
-  }, []);
+  const items = useMemo(() => loadCart(), []);
+  const total = getTotal();
 
-  const total = calcTotal(items);
+  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
 
-  async function submit() {
-    if (items.length === 0) return toast.error("購物車是空的");
-    if (!customerName.trim()) return toast.error("請輸入姓名");
-    if (!customerPhone.trim()) return toast.error("請輸入電話");
-    if (!customerAddress.trim()) return toast.error("請輸入地址");
+  async function submit(e) {
+    e.preventDefault();
+    if (items.length === 0) {
+      push("購物車是空的", "error");
+      return;
+    }
 
-    setSubmitting(true);
+    const payload = {
+      customer: {
+        name: name.trim(),
+        phone: phone.trim(),
+        address: address.trim()
+      },
+      items: items.map((x) => ({
+        productId: x.productId,
+        name: x.name,
+        price: x.price,
+        qty: x.qty
+      })),
+      total
+    };
+
+    setLoading(true);
     try {
-      const body = {
-        customer: { name: customerName.trim(), phone: customerPhone.trim(), address: customerAddress.trim() },
-        items: items.map((x) => ({ productId: x.productId, name: x.name, price: x.price, qty: x.qty })),
-        total,
-        status: "pending",
-      };
-      await createOrder(body);
+      await ordersAPI.create(payload);
       clearCart();
-      toast.success("訂單已建立！");
-      nav("/admin/orders");
-    } catch (e) {
-      toast.error(e.message || "建立訂單失敗");
+      push("訂單建立成功", "success");
+      nav("/");
+    } catch (e2) {
+      push(`建立失敗：${e2.message || "error"}`, "error");
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">結帳</h1>
-          <p className="text-sm text-slate-500">送出後會建立一筆訂單（後台可查看）</p>
-        </div>
-        <Link className="text-sm text-slate-700 hover:underline" to="/cart">← 回購物車</Link>
-      </div>
+    <div className="container-page py-6">
+      <div className="text-2xl font-black">結帳</div>
+      <div className="text-sm text-slate-500 mt-1">填寫資料並建立訂單</div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <div className="md:col-span-2 rounded-2xl border bg-white p-5 shadow-sm">
-          <div className="grid gap-4 md:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="card p-6">
+          <div className="font-black text-lg">收件資訊</div>
+          <form className="mt-4 space-y-4" onSubmit={submit}>
             <div>
-              <label className="text-sm font-medium text-slate-700">姓名</label>
-              <input className="mt-1 w-full rounded-xl border px-3 py-2" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+              <div className="text-sm font-bold mb-1">姓名</div>
+              <input className="input" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
             <div>
-              <label className="text-sm font-medium text-slate-700">電話</label>
-              <input className="mt-1 w-full rounded-xl border px-3 py-2" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+              <div className="text-sm font-bold mb-1">電話</div>
+              <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} required />
             </div>
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium text-slate-700">地址</label>
-              <input className="mt-1 w-full rounded-xl border px-3 py-2" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
+            <div>
+              <div className="text-sm font-bold mb-1">地址</div>
+              <input className="input" value={address} onChange={(e) => setAddress(e.target.value)} required />
             </div>
+
+            <div className="flex gap-3">
+              <button disabled={loading} className="btn-primary">
+                {loading ? "送出中..." : "送出訂單"}
+              </button>
+              <Link className="btn-outline" to="/cart">
+                回購物車
+              </Link>
+            </div>
+          </form>
+        </div>
+
+        <div className="card p-6">
+          <div className="font-black text-lg">訂單摘要</div>
+          <div className="mt-4 space-y-3">
+            {items.length === 0 ? (
+              <div className="text-slate-500">購物車是空的</div>
+            ) : (
+              items.map((x) => (
+                <div key={x.productId} className="flex items-center justify-between">
+                  <div>
+                    <div className="font-bold">{x.name}</div>
+                    <div className="text-xs text-slate-500">
+                      ${x.price} × {x.qty}
+                    </div>
+                  </div>
+                  <div className="font-black">${x.price * x.qty}</div>
+                </div>
+              ))
+            )}
           </div>
 
-          <button
-            disabled={submitting}
-            onClick={submit}
-            className="mt-5 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
-          >
-            {submitting ? "送出中..." : `送出訂單 ($${total})`}
-          </button>
-        </div>
-
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <div className="text-sm font-semibold text-slate-900">訂單內容</div>
-          <div className="mt-3 space-y-2 text-sm">
-            {items.map((x) => (
-              <div key={x.productId} className="flex justify-between">
-                <span className="text-slate-700">{x.name} × {x.qty}</span>
-                <span className="font-semibold">${Number(x.price) * Number(x.qty)}</span>
-              </div>
-            ))}
-            <div className="mt-3 flex justify-between border-t pt-3">
-              <span className="text-slate-600">總金額</span>
-              <span className="font-bold text-slate-900">${total}</span>
-            </div>
+          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div className="text-slate-600">總計</div>
+            <div className="text-2xl font-black text-blue-700">${total}</div>
           </div>
         </div>
       </div>
     </div>
   );
 }
+

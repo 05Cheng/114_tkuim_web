@@ -1,39 +1,72 @@
-import { NavLink } from "react-router-dom";
-
-function Link({ to, children }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        [
-          "rounded-lg px-3 py-2 text-sm font-medium",
-          isActive ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100",
-        ].join(" ")
-      }
-    >
-      {children}
-    </NavLink>
-  );
-}
+import React, { useMemo, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { getCount } from "../lib/cart.js";
 
 export default function NavBar() {
+  const nav = useNavigate();
+  const loc = useLocation();
+  const [q, setQ] = useState("");
+
+  const cartCount = useMemo(() => getCount(), [loc.pathname]); // 路由變動刷新一下
+
+  function onSearch(e) {
+    e.preventDefault();
+    const qs = new URLSearchParams();
+    if (q.trim()) qs.set("q", q.trim());
+    nav({ pathname: "/", search: qs.toString() });
+  }
+
   return (
-    <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-slate-900" />
-          <div>
-            <div className="text-sm font-semibold text-slate-900">ShopLite</div>
-            <div className="text-xs text-slate-500">商品購物 + 訂單管理</div>
+    <header className="bg-blue-600 text-white">
+      <div className="container-page">
+        <div className="flex items-center justify-between py-3 gap-3">
+          <Link to="/" className="font-black text-xl tracking-wide">
+            ShopLite
+          </Link>
+
+          <form onSubmit={onSearch} className="flex-1 max-w-2xl">
+            <div className="flex bg-white rounded-lg overflow-hidden">
+              <input
+                className="w-full px-4 py-2 text-slate-900 outline-none"
+                placeholder="搜尋商品..."
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <button className="px-5 font-bold bg-blue-800 hover:bg-blue-900 transition">搜尋</button>
+            </div>
+          </form>
+
+          <div className="flex items-center gap-4">
+            <NavLink to="/admin/products" className="text-sm font-bold hover:opacity-90">
+              後台
+            </NavLink>
+            <Link to="/cart" className="relative font-bold hover:opacity-90">
+              購物車
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-3 bg-yellow-300 text-slate-900 text-xs font-black px-2 py-0.5 rounded-full">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
-        <nav className="flex items-center gap-2">
-          <Link to="/">商品</Link>
-          <Link to="/cart">購物車</Link>
-          <Link to="/admin/products">後台</Link>
+
+        <nav className="pb-3 text-sm flex gap-4 opacity-95">
+          <NavLink to="/" className="hover:underline">
+            商品
+          </NavLink>
+          <NavLink to="/admin/products" className="hover:underline">
+            商品管理
+          </NavLink>
+          <NavLink to="/admin/orders" className="hover:underline">
+            訂單管理
+          </NavLink>
         </nav>
       </div>
     </header>
   );
 }
+
+
+
 

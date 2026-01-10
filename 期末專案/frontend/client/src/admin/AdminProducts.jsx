@@ -1,21 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { deleteProduct, getProducts } from "../api/products";
-import { useToast } from "../components/Toast";
+import { productsAPI } from "../api/products.js";
+import { useToast } from "../components/Toast.jsx";
 
 export default function AdminProducts() {
-  const toast = useToast();
-  const [q, setQ] = useState("");
-  const [items, setItems] = useState([]);
+  const { push } = useToast();
   const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState([]);
+  const [kw, setKw] = useState("");
+  const [err, setErr] = useState("");
 
   async function load() {
     setLoading(true);
+    setErr("");
     try {
-      const data = await getProducts();
+      const data = await productsAPI.list();
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
-      toast.error(e.message || "載入失敗");
+      setErr(e.message || "Load failed");
     } finally {
       setLoading(false);
     }
@@ -26,99 +28,88 @@ export default function AdminProducts() {
   }, []);
 
   const filtered = useMemo(() => {
-    const k = q.trim().toLowerCase();
-    if (!k) return items;
-    return items.filter((p) => (p.name || "").toLowerCase().includes(k));
-  }, [items, q]);
+    const q = kw.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((p) => (p.name || "").toLowerCase().includes(q));
+  }, [items, kw]);
 
-  async function onDelete(id) {
-    if (!confirm("確定要刪除這個商品？")) return;
+  async function del(id) {
+    if (!confirm("確定要刪除？")) return;
     try {
-      await deleteProduct(id);
-      toast.success("已刪除");
+      await productsAPI.remove(id);
+      push("已刪除", "success");
       load();
     } catch (e) {
-      toast.error(e.message || "刪除失敗");
+      push(`刪除失敗：${e.message}`, "error");
     }
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="container-page py-6">
+      <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">後台｜商品管理</h1>
-          <p className="text-sm text-slate-500">CRUD：新增、列表、編輯、刪除</p>
-          <div className="mt-2 flex gap-2 text-sm">
-            <Link to="/admin/orders" className="text-slate-700 underline">去訂單管理</Link>
-            <Link to="/" className="text-slate-700 underline">回前台</Link>
-          </div>
+          <div className="text-2xl font-black">後台｜商品管理</div>
+          <div className="text-sm text-slate-500 mt-1">CRUD：新增、列表、編輯、刪除</div>
         </div>
-
-        <div className="flex gap-2">
-          <input
-            className="w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-300 md:w-[260px]"
-            placeholder="搜尋商品..."
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-          <Link
-            to="/admin/products/new"
-            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-          >
-            新增商品
-          </Link>
-        </div>
+        <Link className="btn-primary" to="/admin/products/new">
+          新增商品
+        </Link>
       </div>
 
-      <div className="mt-6 rounded-2xl border bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-slate-50 text-left text-slate-600">
+      <div className="mt-4 card p-4 flex items-center gap-3">
+        <input className="input max-w-md" placeholder="搜尋商品..." value={kw} onChange={(e) => setKw(e.target.value)} />
+        <button className="btn-outline" onClick={load}>
+          重新整理
+        </button>
+        <Link className="btn-outline ml-auto" to="/admin/orders">
+          去訂單管理
+        </Link>
+      </div>
+
+      <div className="mt-4 card p-4">
+        {loading && <div className="text-slate-500">載入中...</div>}
+        {!loading && err && <div className="text-red-600">載入失敗：{err}</div>}
+
+        {!loading && !err && (
+          <table className="table">
+            <thead>
               <tr>
-                <th className="p-3">名稱</th>
-                <th className="p-3">價格</th>
-                <th className="p-3">庫存</th>
-                <th className="p-3">操作</th>
+                <th>名稱</th>
+                <th className="w-28">價格</th>
+                <th className="w-28">庫存</th>
+                <th className="w-44">操作</th>
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr><td className="p-4 text-slate-500" colSpan="4">載入中...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td className="p-4 text-slate-500" colSpan="4">沒有資料</td></tr>
-              ) : (
-                filtered.map((p) => (
-                  <tr key={p._id} className="border-b last:border-b-0">
-                    <td className="p-3">
-                      <div className="font-semibold text-slate-900">{p.name}</div>
-                      <div className="text-xs text-slate-500 line-clamp-1">{p.description || "—"}</div>
-                    </td>
-                    <td className="p-3">${Number(p.price || 0)}</td>
-                    <td className="p-3">{Number(p.stock ?? 0)}</td>
-                    <td className="p-3">
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          to={`/admin/products/${p._id}/edit`}
-                          className="rounded-lg border px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-                        >
-                          編輯
-                        </Link>
-                        <button
-                          onClick={() => onDelete(p._id)}
-                          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800 hover:bg-rose-100"
-                        >
-                          刪除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+              {filtered.map((p) => (
+                <tr key={p._id}>
+                  <td>
+                    <div className="font-bold">{p.name}</div>
+                    <div className="text-xs text-slate-500 line-clamp-2">{p.description || "—"}</div>
+                  </td>
+                  <td>${Number(p.price || 0)}</td>
+                  <td>{Number(p.stock || 0)}</td>
+                  <td className="flex gap-2">
+                    <Link className="btn-outline px-3 py-2" to={`/admin/products/${p._id}/edit`}>
+                      編輯
+                    </Link>
+                    <button className="btn-danger px-3 py-2" onClick={() => del(p._id)}>
+                      刪除
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="text-slate-500 py-6 text-center">
+                    沒有資料
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
-        </div>
+        )}
       </div>
     </div>
   );
 }
-

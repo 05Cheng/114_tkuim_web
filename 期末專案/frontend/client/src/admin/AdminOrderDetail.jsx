@@ -1,24 +1,24 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getOrder, updateOrder } from "../api/orders";
-import { useToast } from "../components/Toast";
-
-const STATUSES = ["pending", "paid", "shipped", "done", "cancelled"];
+import { ordersAPI } from "../api/orders.js";
+import { useToast } from "../components/Toast.jsx";
 
 export default function AdminOrderDetail() {
   const { id } = useParams();
-  const toast = useToast();
-  const [order, setOrder] = useState(null);
+  const { push } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [o, setO] = useState(null);
+  const [err, setErr] = useState("");
 
   async function load() {
     setLoading(true);
+    setErr("");
     try {
-      const data = await getOrder(id);
-      setOrder(data);
+      const data = await ordersAPI.get(id);
+      setO(data);
     } catch (e) {
-      toast.error(e.message || "載入失敗");
+      setErr(e.message || "Load failed");
     } finally {
       setLoading(false);
     }
@@ -31,79 +31,101 @@ export default function AdminOrderDetail() {
   async function setStatus(status) {
     setSaving(true);
     try {
-      const updated = await updateOrder(id, { status });
-      setOrder(updated);
-      toast.success("狀態已更新");
+      await ordersAPI.update(id, { status });
+      push("狀態已更新", "success");
+      load();
     } catch (e) {
-      toast.error(e.message || "更新失敗");
+      push(`更新失敗：${e.message}`, "error");
     } finally {
       setSaving(false);
     }
   }
 
+  if (loading) return <div className="container-page py-6 text-slate-500">載入中...</div>;
+  if (err) return <div className="container-page py-6 text-red-600">載入失敗：{err}</div>;
+  if (!o) return <div className="container-page py-6 text-slate-500">找不到訂單</div>;
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">訂單詳情</h1>
-          <p className="text-sm text-slate-500">查看訂單內容、更新狀態</p>
+    <div className="container-page py-6">
+      <div className="card p-6">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-2xl font-black">訂單詳情</div>
+            <div className="text-xs text-slate-500 font-mono mt-1">{o._id}</div>
+          </div>
+          <Link className="btn-outline" to="/admin/orders">
+            回訂單列表
+          </Link>
         </div>
-        <Link className="text-sm text-slate-700 hover:underline" to="/admin/orders">← 回訂單列表</Link>
-      </div>
 
-      <div className="mt-6 rounded-2xl border bg-white p-6 shadow-sm">
-        {loading ? (
-          <div className="text-sm text-slate-500">載入中...</div>
-        ) : !order ? (
-          <div className="text-sm text-slate-500">找不到訂單</div>
-        ) : (
-          <>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-xl border p-4">
-                <div className="text-xs text-slate-500">客戶</div>
-                <div className="mt-1 font-semibold text-slate-900">{order.customer?.name || "—"}</div>
-                <div className="text-sm text-slate-600">{order.customer?.phone || ""}</div>
-                <div className="text-sm text-slate-600">{order.customer?.address || ""}</div>
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="card p-5">
+            <div className="font-black">收件人</div>
+            <div className="mt-2 text-sm text-slate-700">
+              <div>姓名：{o.customer?.name || "—"}</div>
+              <div>電話：{o.customer?.phone || "—"}</div>
+              <div>地址：{o.customer?.address || "—"}</div>
+            </div>
+
+            <div className="mt-4">
+              <div className="font-black">狀態</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button disabled={saving} className="btn-outline" onClick={() => setStatus("pending")}>
+                  pending
+                </button>
+                <button disabled={saving} className="btn-outline" onClick={() => setStatus("paid")}>
+                  paid
+                </button>
+                <button disabled={saving} className="btn-outline" onClick={() => setStatus("shipped")}>
+                  shipped
+                </button>
+                <button disabled={saving} className="btn-outline" onClick={() => setStatus("cancelled")}>
+                  cancelled
+                </button>
               </div>
-              <div className="rounded-xl border p-4">
-                <div className="text-xs text-slate-500">總金額</div>
-                <div className="mt-1 text-2xl font-bold text-slate-900">${Number(order.total || 0)}</div>
+            </div>
 
-                <div className="mt-3 text-xs text-slate-500">狀態</div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {STATUSES.map((s) => (
-                    <button
-                      key={s}
-                      disabled={saving}
-                      onClick={() => setStatus(s)}
-                      className={[
-                        "rounded-lg px-3 py-2 text-xs font-semibold border",
-                        order.status === s ? "bg-slate-900 text-white border-slate-900" : "hover:bg-slate-50",
-                        saving && "opacity-60",
-                      ].join(" ")}
-                    >
-                      {s}
-                    </button>
+            <div className="mt-4 text-slate-600">
+              總計：<span className="text-2xl font-black text-blue-700">${Number(o.total || 0)}</span>
+            </div>
+          </div>
+
+          <div className="card p-5">
+            <div className="font-black">商品明細</div>
+            <div className="mt-3">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>商品</th>
+                    <th className="w-28">單價</th>
+                    <th className="w-20">數量</th>
+                    <th className="w-28">小計</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(o.items || []).map((x, idx) => (
+                    <tr key={idx}>
+                      <td className="font-bold">{x.name || "—"}</td>
+                      <td>${Number(x.price || 0)}</td>
+                      <td>{Number(x.qty || 0)}</td>
+                      <td className="font-bold">${Number(x.price || 0) * Number(x.qty || 0)}</td>
+                    </tr>
                   ))}
-                </div>
-              </div>
+                  {(o.items || []).length === 0 && (
+                    <tr>
+                      <td colSpan="4" className="text-slate-500 py-6 text-center">
+                        沒有商品
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-
-            <div className="mt-5 rounded-xl border">
-              <div className="border-b bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900">商品清單</div>
-              <div className="p-4 space-y-2 text-sm">
-                {(order.items || []).map((x, idx) => (
-                  <div key={idx} className="flex justify-between">
-                    <span className="text-slate-700">{x.name} × {x.qty}</span>
-                    <span className="font-semibold">${Number(x.price || 0) * Number(x.qty || 0)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
 

@@ -1,22 +1,18 @@
-import { request } from "./http";
+import { request } from "./http.js";
 
-export function getOrders() {
-  return request("/api/orders");
-}
+export const ordersAPI = {
+  list: () => request("/api/orders"),
+  get: (id) => request(`/api/orders/${id}`),
+  create: (payload) =>
+    request("/api/orders", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  update: (id, payload) =>
+    request(`/api/orders/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    })
+};
 
-export function getOrder(id) {
-  return request(`/api/orders/${id}`);
-}
-
-export function createOrder(body) {
-  return request("/api/orders", { method: "POST", body: JSON.stringify(body) });
-}
-
-export function updateOrder(id, body) {
-  return request(`/api/orders/${id}`, { method: "PUT", body: JSON.stringify(body) });
-}
-
-export function deleteOrder(id) {
-  return request(`/api/orders/${id}`, { method: "DELETE" });
-}
 

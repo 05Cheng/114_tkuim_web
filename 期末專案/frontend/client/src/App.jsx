@@ -1,24 +1,25 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import NavBar from "./components/NavBar";
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import NavBar from "./components/NavBar.jsx";
 
-import Home from "./pages/Home";
-import ProductDetail from "./pages/ProductDetail";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
+import Home from "./pages/Home.jsx";
+import ProductDetail from "./pages/ProductDetail.jsx";
+import Cart from "./pages/Cart.jsx";
+import Checkout from "./pages/Checkout.jsx";
 
-import AdminProducts from "./admin/AdminProducts";
-import AdminProductNew from "./admin/AdminProductNew";
-import AdminProductEdit from "./admin/AdminProductEdit";
-import AdminOrders from "./admin/AdminOrders";
-import AdminOrderDetail from "./admin/AdminOrderDetail";
+import AdminProducts from "./admin/AdminProducts.jsx";
+import AdminProductNew from "./admin/AdminProductNew.jsx";
+import AdminProductEdit from "./admin/AdminProductEdit.jsx";
+import AdminOrders from "./admin/AdminOrders.jsx";
+import AdminOrderDetail from "./admin/AdminOrderDetail.jsx";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
 
@@ -31,8 +32,12 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <div className="py-10" />
+
+      <footer className="mt-10 py-10 text-center text-sm text-slate-500">
+        <div className="container-page">ShopLite © {new Date().getFullYear()}</div>
+      </footer>
     </div>
   );
 }
+
 
